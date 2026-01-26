@@ -1,0 +1,18 @@
+# Data
+data/raw/
+data/*.csv
+data/*.xls
+
+# Models & Results
+results/*.pkl
+results/*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# MacOS
+.DS_Store
