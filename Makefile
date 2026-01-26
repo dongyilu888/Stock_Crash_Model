@@ -1,9 +1,10 @@
 .PHONY: setup data features train run clean
 
+# Hardcoded path to Miniconda environment
+PYTHON = /opt/miniconda3/bin/python
+
 # Ensure Miniconda bin is in PATH
 export PATH := /opt/miniconda3/bin:$(PATH)
-
-PYTHON = python
 
 setup:
 	$(PYTHON) -m pip install -r requirements.txt
@@ -20,8 +21,18 @@ train:
 	$(PYTHON) -m model.train_gbm
 
 run:
-	$(PYTHON) -m streamlit run app/dashboard.py
+	$(PYTHON) -m streamlit run app/dashboard.py --server.port 8501
+
+stop:
+	-@lsof -ti:8501 | xargs kill -9 2>/dev/null || true
 
 pipeline: data features train
+
+debug-env:
+	@echo "PATH: $(PATH)"
+	@which python
+	@python --version
+	@which streamlit || echo "streamlit not in path"
+	@python -m streamlit --version
 
 all: setup pipeline run

@@ -60,15 +60,33 @@ def build_features():
     # Target: Min(Full Drawdown) in next 12 months < -0.20
     future_min_drawdown = full_drawdown.rolling(window=indexer).min()
     
-    # Binary Target
-    # Also, we might want to exclude times where we are *already* in a crash bottom.
-    # But prediction "Will it crash/stay crashed?" captures risk.
-    # If market is down 50%, "Crash Risk" is high (it is crashed).
-    # Maybe "Crash Initiation"?
-    # The user asked: "estimate when the next S&P 500 crash is likely to occur... probability a crash occurs in next t months"
-    # This implies usually "Onset".
-    # But let's stick to "Risk Regime". If prob is high, you are in danger.
+    # Binary Target for classification
     df['Target_Crash_12m'] = (future_min_drawdown < -0.20).astype(int)
+    
+    # 1b. Survival Target: Time-to-Event (Duration) and Censorship (Event)
+    # For each month T, how many months until the NEXT crash (drawdown < -20%)?
+    # A crash "occurs" when the full_drawdown first dips below -0.20.
+    crash_points = (full_drawdown < -0.20).astype(int)
+    
+    # Find indices of all crash months
+    crash_dates = df.index[crash_points == 1]
+    
+    def get_survival_info(current_date):
+        # Future crashes only
+        future_crashes = crash_dates[crash_dates > current_date]
+        if len(future_crashes) > 0:
+            next_crash = future_crashes[0]
+            # Duration in months (approx)
+            duration = (next_crash.year - current_date.year) * 12 + (next_crash.month - current_date.month)
+            return duration, 1 # Event observed
+        else:
+            # Censored: Use distance to the end of the dataset
+            last_date = df.index.max()
+            duration = (last_date.year - current_date.year) * 12 + (last_date.month - current_date.month)
+            return duration, 0 # Censored
+            
+    survival_data = [get_survival_info(d) for d in df.index]
+    df['Duration_to_Crash'], df['Event_Observed'] = zip(*survival_data)
     
     # 2. Features
     
