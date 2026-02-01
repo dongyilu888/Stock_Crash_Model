@@ -19,7 +19,11 @@ FRED_FILES = {
     'BAA.csv': 'BAA',
     'PPIACO.csv': 'PPI_Commodity',
     'PCOPPUSDM.csv': 'Copper',
-    'POILBREUSDM.csv': 'Oil_Brent'
+    'POILBREUSDM.csv': 'Oil_Brent',
+    'HOUST.csv': 'Housing_Starts',
+    'UMCSENT.csv': 'Consumer_Sentiment',
+    'AWHMAN.csv': 'Weekly_Hours_Mfg',
+    'PERMIT.csv': 'Building_Permits'
 }
 
 def load_shiller():

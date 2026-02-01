@@ -1,0 +1,230 @@
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Term_Spread', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Term_Spread', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Term_Spread', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Term_Spread', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Term_Spread', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'CAPE_Unemp_Interaction', 'Term_Inversion'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'CAPE_Unemp_Interaction'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Rate', 'Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'CAPE_Unemp_Interaction'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Unemployment_Change_12m', 'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'CAPE_Unemp_Interaction'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Housing_Starts_12m', 'Building_Permits_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Housing_Starts_12m', 'Building_Permits_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Housing_Starts_12m', 'Building_Permits_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Housing_Starts_12m', 'Building_Permits_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Housing_Starts_12m', 'Building_Permits_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Housing_Starts_12m', 'Building_Permits_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:1100: ConvergenceWarning: Column(s) ['Building_Permits_12m'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
+
+  warnings.warn(dedent(warning_text), ConvergenceWarning)
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/utils/__init__.py:797: RuntimeWarning: invalid value encountered in divide
+  return (X - mean) / std
+/opt/miniconda3/lib/python3.13/site-packages/lifelines/fitters/coxph_fitter.py:1530: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 0.0.
+  inv_h_dot_g_T = spsolve(-h, g, assume_a="pos", check_finite=False)
+Training Survival Model (CoxPH)...
+Backtesting from 1929 to 2025...
+Error at 1973-01-01 00:00:00: No admissable pairs in the dataset.
+Overall Survival C-Index: 0.6974
+Training final survival model...
+Survival training complete.

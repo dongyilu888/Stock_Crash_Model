@@ -19,6 +19,7 @@ features:
 train:
 	$(PYTHON) -m model.train
 	$(PYTHON) -m model.train_gbm
+	$(PYTHON) -m model.train_survival
 
 run:
 	$(PYTHON) -m streamlit run app/dashboard.py --server.port 8501

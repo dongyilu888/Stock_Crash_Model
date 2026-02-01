@@ -20,6 +20,8 @@ def build_features():
     # Load with index_col=0 (first column) and parse that as dates
     df = pd.read_csv(PROCESSED_FILE, index_col=0, parse_dates=[0])
     df.index.name = 'Date' # Restore name explicitly
+    print(f"Initial load shape: {df.shape}")
+
     
     # 1. Target Definition: Crash in Next 12 Months
     # Definition: "A crash occurs when the S&P 500 experiences a greater than 20% peak-to-trough decline"
@@ -32,61 +34,118 @@ def build_features():
     # Let's use All-Time High up to time t.
     
     price = df['S&P500_Price']
-    
-    # Forward looking min price in next 12 months
-    indexer = pd.api.indexers.FixedForwardWindowIndexer(window_size=12)
-    future_min = price.rolling(window=indexer).min()
-    
-    # Current All-Time High (or rolling 2-year high? ATH is better for "bear market")
-    # But usually bear market is from 52-week high or recent peak.
-    # Let's use standard Drawdown definition: Drawdown from *running max*.
-    running_max = price.cummax()
-    
-    # Future Drawdown: The lowest point in the next 12 months relative to the *Peak existing at that future moment*.
-    # Actually, simpler: Will we be >20% below the Peak-at-time-t within 12 months?
-    # Or will we be >20% below the Peak-at-time-(t+k)?
-    # Let's target: Will the Maximum Drawdown in the next 12 months exceed 20%?
-    # Max Drawdown in (t, t+12) window.
-    # Drawdown_t = (P_t / Max(P_0..P_t)) - 1
-    # We want max(Drawdown_t+1 ... Drawdown_t+12) < -0.20? (Remember drawdown is negative).
-    # So min(Drawdown) < -0.20.
-    
-    # We need to calculate the *future realized drawdown* path.
-    # Note: We can't peek future for *input features*, but we use it for *target*.
-    
-    # Calculate full history drawdown first
     full_drawdown = calculate_drawdown(price)
     
     # Target: Min(Full Drawdown) in next 12 months < -0.20
+    indexer = pd.api.indexers.FixedForwardWindowIndexer(window_size=12)
     future_min_drawdown = full_drawdown.rolling(window=indexer).min()
-    
-    # Binary Target for classification
     df['Target_Crash_12m'] = (future_min_drawdown < -0.20).astype(int)
     
-    # 1b. Survival Target: Time-to-Event (Duration) and Censorship (Event)
-    # For each month T, how many months until the NEXT crash (drawdown < -20%)?
-    # A crash "occurs" when the full_drawdown first dips below -0.20.
-    crash_points = (full_drawdown < -0.20).astype(int)
+    # 1b. Rigorous Survival Target: Bull Market Subjects
+    # - Event: A peak that leads to a >20% drawdown.
+    # - Start (Clock Reset): The trough before the bull run.
+    # - Left-Truncation: Handle subjects that were already "alive" at study start.
     
-    # Find indices of all crash months
-    crash_dates = df.index[crash_points == 1]
+    # Step 1: Identify all "Crash Decided" months (when price is 20% below recent peak)
+    crash_regime = full_drawdown < -0.20
     
-    def get_survival_info(current_date):
-        # Future crashes only
-        future_crashes = crash_dates[crash_dates > current_date]
-        if len(future_crashes) > 0:
-            next_crash = future_crashes[0]
-            # Duration in months (approx)
-            duration = (next_crash.year - current_date.year) * 12 + (next_crash.month - current_date.month)
-            return duration, 1 # Event observed
-        else:
-            # Censored: Use distance to the end of the dataset
-            last_date = df.index.max()
-            duration = (last_date.year - current_date.year) * 12 + (last_date.month - current_date.month)
-            return duration, 0 # Censored
+    # Step 2: Identify Cycle Landmarks (Robust Peak/Trough Detection)
+    # 20% Threshold for Bull/Bear state machine
+    peaks = []
+    troughs = []
+    
+    current_high = price.iloc[0]
+    current_low = price.iloc[0]
+    high_date = price.index[0]
+    low_date = price.index[0]
+    
+    state = "BULL"
+    for date, p in price.items():
+        if state == "BULL":
+            if p > current_high:
+                current_high = p
+                high_date = date
+            elif p < current_high * 0.80:
+                peaks.append(high_date)
+                state = "BEAR"
+                current_low = p
+                low_date = date
+        else: # BEAR
+            if p < current_low:
+                current_low = p
+                low_date = date
+            elif p > current_low * 1.20:
+                troughs.append(low_date)
+                state = "BULL"
+                current_high = p
+                high_date = date
+                
+    peaks = sorted(list(set(peaks)))
+    troughs = sorted(list(set(troughs)))
+    
+    # Step 3: Assign each month to a "Subject" (Bull Market Cycle)
+    df['Subject_Start'] = pd.NaT
+    df['Event_Observed'] = 0
+    df['Death_Date'] = pd.NaT
+    
+    # Handle the very first bull run
+    current_trough = pd.Timestamp('1921-08-01') # Historical floor
+    
+    for p_date in peaks:
+        mask = (df.index > current_trough) & (df.index <= p_date)
+        df.loc[mask, 'Subject_Start'] = current_trough
+        df.loc[df.index == p_date, 'Event_Observed'] = 1
+        df.loc[mask, 'Death_Date'] = p_date
+        
+        # Find the trough that followed this peak
+        post_peak_troughs = [t for t in troughs if t > p_date]
+        if post_peak_troughs:
+            current_trough = post_peak_troughs[0]
             
-    survival_data = [get_survival_info(d) for d in df.index]
-    df['Duration_to_Crash'], df['Event_Observed'] = zip(*survival_data)
+    # Step 3b: Identify Contraction Phases (Peak to Trough) for Visualization
+    df['Contraction_Phase'] = 0
+    for p_date in peaks:
+        post_peak_troughs = [t for t in troughs if t > p_date]
+        if post_peak_troughs:
+            t_date = post_peak_troughs[0]
+            mask_crash = (df.index > p_date) & (df.index <= t_date)
+            df.loc[mask_crash, 'Contraction_Phase'] = 1
+
+
+
+
+
+    
+    # Handle the final (ongoing) cycle
+    mask_ongoing = df['Subject_Start'].isna() & (df.index > current_trough)
+    df.loc[mask_ongoing, 'Subject_Start'] = current_trough
+    df.loc[mask_ongoing, 'Death_Date'] = df.index.max()
+    df.loc[mask_ongoing, 'Event_Observed'] = 0 # Censored
+    
+    # Step 4: Calculate Durations and Entry Times (Left-Truncation)
+    def months_diff(d1, d2):
+        if pd.isna(d1) or pd.isna(d2): return 0
+        return (d1.year - d2.year) * 12 + (d1.month - d2.month)
+    
+    # Current Age of the bull market
+    df['Current_Age'] = df.apply(lambda row: months_diff(row.name, row['Subject_Start']), axis=1)
+    
+    # Final age when bull market dies/censored
+    df['Duration_to_Crash'] = df.apply(lambda row: months_diff(row['Death_Date'], row['Subject_Start']), axis=1)
+
+    # Entry Age for this specific observation
+    df['Entry_Age'] = df['Current_Age']
+    df['Stop_Age'] = df['Current_Age'] + 1
+    
+    # Event only happens if current month is the peak
+    df['Survival_Event'] = df['Event_Observed'] 
+    
+    # Note: We do not dropna(subset=['Subject_Start']) here to allow
+    # dashboarding contraction months.
+
+    
+    # Ensure all ages are non-negative
+    df = df[df['Current_Age'] >= 0]
     
     # 2. Features
     
@@ -152,35 +211,74 @@ def build_features():
     df['S&P_Ret_12m'] = df['S&P500_Price'].pct_change(12)
     df['S&P_Vol_12m'] = df['S&P500_Price'].rolling(12).std() / df['S&P500_Price'] # Simple monthly vol proxy
     
+    # Leading Indicators
+    if 'Housing_Starts' in df.columns:
+        df['Housing_Starts_12m'] = df['Housing_Starts'].pct_change(12)
+    if 'Building_Permits' in df.columns:
+        df['Building_Permits_12m'] = df['Building_Permits'].pct_change(12)
+    if 'Consumer_Sentiment' in df.columns:
+        df['Sentiment_Change_12m'] = df['Consumer_Sentiment'].diff(12)
+    if 'Weekly_Hours_Mfg' in df.columns:
+        df['Mfg_Hours_Change_12m'] = df['Weekly_Hours_Mfg'].diff(12)
+
+    # Interaction & Non-linear Features
+    # 1. Stress * Valuation interaction (high unemployment change + high CAPE)
+    if 'CAPE' in df.columns and 'Unemployment_Change_12m' in df.columns:
+        df['CAPE_Unemp_Interaction'] = df['CAPE'] * df['Unemployment_Change_12m'].clip(lower=0)
+        
+    # 2. Term Inversion (Inverse of spread, focusing on the inversion regime)
+    if 'Term_Spread' in df.columns:
+        df['Term_Inversion'] = 1.0 / (df['Term_Spread'] + 2.0) # Offset to avoid div by zero and focus on inversion
+        
     # Previous Drawdown state (How deep are we now?)
     df['Current_Drawdown'] = full_drawdown
     
-    # Lag Features (prevent leakage)
-    # We used current t values for features. Target is t+1..t+12.
-    # So features at row t are known at t.
-    # Strictly speaking, Shiller data like CPI/Earnings is reported with lag.
-    # Usually 1-2 months lag.
-    # To be safe/realistic, we should lag macro features by 1 month.
-    # But for "Data Scientist" task, using 'vintage' data is hard.
-    # We'll assume at Month End t, we have Month End t prices, and Month t-1 Macro.
-    # The dataset aligns 'Date' as month start.
-    # Values for '2023-01-01' usually mean Jan 2023 average or Jan 1st?
-    # Price is usually Monthly Average in Shiller.
-    # UNRATE is Monthly.
-    # We will lag "Reporting" features by 1 month?
-    # Safe approach: Shift Macro/Earnings features by 1. Keep Price/Trend (observable) at 0?
-    # Or just Assume Availability.
-    # Let's use 1 month lag for Macro columns to be safe.
+    # Feature-Specific Lags: Apply realistic publication delays
+    # This optimizes model responsiveness while preventing data leakage
+    lag_config = {
+        # Market data: available immediately (end-of-day)
+        'S&P_Ret_12m': 0,
+        'S&P_Vol_12m': 0,
+        'Current_Drawdown': 0,
+        
+        # Interest rates: available within days (Fed/Treasury data)
+        'Term_Spread': 0,
+        'Credit_Spread': 0,
+        'Real_Rate': 0,
+        'Term_Inversion': 0,
+        
+        # Valuation: quarterly earnings with ~1 month processing
+        'CAPE': 1,
+        'Earnings_Yield': 1,
+        
+        # Macro: monthly releases with 2-4 week delay
+        'Unemployment_Rate': 1,
+        'Unemployment_Change_12m': 1,
+        'Unemployment_Change_3m': 1,
+        'Inflation_12m': 1,  # CPI released mid-month for prior month
+        'Commodity_Ret_12m': 1,
+        'Mfg_Hours_Change_12m': 1,
+        
+        # Housing: 1-2 month lag (Census Bureau releases)
+        'Housing_Starts_12m': 2,
+        'Building_Permits_12m': 2,
+        
+        # Sentiment: end of month release
+        'Sentiment_Change_12m': 1,
+        
+        # Derived features inherit from components
+        'CAPE_Unemp_Interaction': 1,  # Max of CAPE(1) and Unemployment(1)
+    }
     
-    macro_cols = ['CAPE', 'Earnings_Yield', 'Unemployment_Rate', 'Unemployment_Change_12m', 
-                  'Inflation_12m', 'Term_Spread', 'Credit_Spread', 'Real_Rate']
-                  
-    for c in macro_cols:
-        if c in df.columns:
-            df[c] = df[c].shift(1)
+    # Apply feature-specific lags
+    for feature, lag_months in lag_config.items():
+        if feature in df.columns:
+            df[feature] = df[feature].shift(lag_months)
             
-    # Drop rows where Target is NaN (last 12 months)
-    df = df.dropna(subset=['Target_Crash_12m'])
+    # We DO NOT dropna for Target here to allow dashboarding current months
+    # Retraining scripts will handle their own dropna.
+
+
     
     # Also drop very early rows if too many NaNs, but we want 1929.
     # We will keep them. Models will handle NaNs.

@@ -21,7 +21,9 @@ FEATURES = [
     'CAPE', 'Earnings_Yield', 
     'Inflation_12m', 'Unemployment_Rate', 'Unemployment_Change_12m', 
     'Term_Spread', 'Credit_Spread', 'Real_Rate', 
-    'Commodity_Ret_12m', 'S&P_Ret_12m', 'S&P_Vol_12m'
+    'Commodity_Ret_12m', 'S&P_Ret_12m', 'S&P_Vol_12m',
+    'Housing_Starts_12m', 'Building_Permits_12m', 'Sentiment_Change_12m', 'Mfg_Hours_Change_12m',
+    'CAPE_Unemp_Interaction', 'Term_Inversion'
 ]
 
 TARGET = 'Target_Crash_12m'
@@ -38,8 +40,8 @@ def train_model():
     df = pd.read_csv(FEATURES_FILE, index_col=0, parse_dates=[0])
     df = df.sort_index()
     
-    # Define start date for backtest (e.g. 1960 to have enough history)
-    start_date = pd.Timestamp('1960-01-01')
+    # Define start date for backtest (1929 to capture Great Depression out-of-sample)
+    start_date = pd.Timestamp('1929-01-01')
     
     # Expanding Window Loop
     # We will iterate year by year? Or month by month?
@@ -50,8 +52,9 @@ def train_model():
     predictions = []
     
     # Create timestamps for annual expansion
-    # Start from 1960
-    years = pd.date_range(start=start_date, end=df.index.max(), freq='AS') # Year Start
+    # Start from 1960 (so initial training is 1929-1959)
+    # Expand every 1 year
+    years = pd.date_range(start=pd.Timestamp('1960-01-01'), end=df.index.max(), freq='YS') # 1-Year Start
     
     # Model Pipeline
     # Impute missing values (RF can't handle NaNs in scikit-learn standard, though HistGradient can. use SimpleImputer)
@@ -67,10 +70,14 @@ def train_model():
         print(f"Warning: Data starts at {df.index.min()}, adjusting start.")
         years = pd.date_range(start=df.index.min() + pd.DateOffset(years=5), end=df.index.max(), freq='AS')
     
-    print(f"Backtesting from {years[0].year} to {years[-1].year}...")
+    print(f"Backtesting from {years[0].year} to {years[-1].year} with 1-year windows...")
     
     for dt in years:
-        train_mask = df.index < dt
+        # PURE LIVE BACKTEST: You can only train on labels that are fully known.
+        # At time T, we predict T+1 to T+12 (1 year). We can train on data up to T-1.
+        # The 1-month gap accounts for feature publication lags (already applied in features).
+        train_mask = df.index < (dt - pd.DateOffset(months=1))
+        # Test 1 year forward (e.g., 1960 inclusive)
         test_mask = (df.index >= dt) & (df.index < dt + pd.DateOffset(years=1))
         
         train_df = df[train_mask]
@@ -111,15 +118,22 @@ def train_model():
     
     # Calculate Evaluation Scores
     # Overall Somers' D
+    from sklearn.metrics import brier_score_loss, average_precision_score
+    
     overall_sd = somers_d_score(full_preds['Target'], full_preds['Crash_Prob'])
+    overall_brier = brier_score_loss(full_preds['Target'], full_preds['Crash_Prob'])
+    overall_pr_auc = average_precision_score(full_preds['Target'], full_preds['Crash_Prob'])
+    
     print(f"Overall Out-of-Sample Somers' D: {overall_sd:.4f}")
+    print(f"Overall Out-of-Sample Brier Score: {overall_brier:.4f}")
+    print(f"Overall Out-of-Sample PR-AUC: {overall_pr_auc:.4f}")
     
     # Rolling Somers' D (e.g. 5 or 10 year window)
     # We can compute this for the metrics file
     metrics = []
     # Compute score per decade? Or rolling 5 year?
-    # Window size: 60 months
-    window_size = 60
+    # Window size: 30 months
+    window_size = 30
     
     # We need a rolling apply.
     # Custom rolling metric.
@@ -164,9 +178,13 @@ def train_model():
         shap_values = explainer.shap_values(X_transformed)
         
         # shap_values is list of arrays for classification (one per class). We want Prob(Crash)=1
+        # Handle different SHAP output formats (list of arrays, 3D array, or 2D array)
         if isinstance(shap_values, list):
-             # Class 1
+             # Class 1 (Crash)
              vals = shap_values[1]
+        elif len(shap_values.shape) == 3:
+             # Class 1 (Crash) from (samples, features, classes)
+             vals = shap_values[:, :, 1]
         else:
              vals = shap_values
              

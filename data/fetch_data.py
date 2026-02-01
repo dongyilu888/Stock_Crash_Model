@@ -20,9 +20,13 @@ FRED_SERIES = {
     'TB3MS': '3-Month Treasury Bill',            # Monthly, 1934
     'AAA': 'Moody\'s Seasoned Aaa Corp Bond',    # Monthly, 1919
     'BAA': 'Moody\'s Seasoned Baa Corp Bond',    # Monthly, 1919
-    'PPIACO': 'PPI All Commodities',             # Monthly, 1913 (Proxy for commodities)
+    'PPIACO': 'PPI All Commodities',             # Monthly, 1913
     'PCOPPUSDM': 'Global Price of Copper',       # Monthly, 1990
     'POILBREUSDM': 'Global Price of Brent Crude',# Monthly, 1990
+    'HOUST': 'Housing Starts',                   # Monthly, 1959
+    'UMCSENT': 'Consumer Sentiment',             # Monthly, 1952
+    'AWHMAN': 'Weekly Hours Manufacturing',      # Monthly, 1939
+    'PERMIT': 'Building Permits',                # Monthly, 1960
 }
 
 def setup_dirs():
