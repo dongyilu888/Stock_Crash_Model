@@ -5,8 +5,13 @@ import pickle
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score
 from sklearn.inspection import permutation_importance
 from sklearn.calibration import CalibratedClassifierCV
+try:
+    import shap
+except ImportError:
+    shap = None
 
 # Constants
 DATA_DIR = 'data'
@@ -151,21 +156,51 @@ def train_gbm():
     with open(MODEL_FILE, 'wb') as f:
         pickle.dump(model, f)
         
-    # Interpretability: Permutation Importance
-    # SHAP for HistGradientBoosting is not as straightforward directly with TreeExplainer in some versions,
-    # or requires specific wrapper. Permutation importance is model-agnostic and robust.
-    print("Calculating Permutation Importance...")
-    # Use valid set (or recent data)
-    r = permutation_importance(model, X_full, y_full, n_repeats=10, random_state=42, n_jobs=-1)
+    # Interpretability
+    # Use SHAP if available. SHAP for HistGradientBoosting returns the raw leaf values (log-odds).
+    # Since we use CalibratedClassifierCV, we cannot explain the outer model directly with TreeExplainer.
+    # We train a "Proxy" uncalibrated model on the full dataset solely for interpretation.
+    # This acts as the "core logic" of the GBM before the sigmoid calibration layer.
     
-    imp_data = {
-        'importances_mean': r.importances_mean,
-        'features': FEATURES,
-        'method': 'permutation'
-    }
+    if shap:
+        print("Calculating SHAP values using Proxy Model...")
+        # Proxy model with identical params to base_model
+        proxy_model = HistGradientBoostingClassifier(
+            learning_rate=0.03, 
+            max_iter=200, 
+            max_depth=3, 
+            min_samples_leaf=40,
+            l2_regularization=10.0,
+            random_state=42
+        )
+        proxy_model.fit(X_full, y_full)
+        
+        # Explain
+        explainer = shap.TreeExplainer(proxy_model)
+        # SHAP for HistGradientBoosting in newer versions might compute directly.
+        shap_values = explainer.shap_values(X_full)
+        
+        # shap_values shape for binary classification might be (N, features) for log-odds or (N, features, 2)
+        # For HistGradientBoostingClassifier, it often returns just the raw values for the positive class (if binary).
+        print(f"SHAP values shape: {shap_values.shape}")
+        
+        shap_data = {
+            'shap_values': shap_values,
+            'X': X_full,
+            'features': FEATURES,
+            'method': 'shap'
+        }
+    else:
+        print("SHAP not found. Calculating Permutation Importance...")
+        r = permutation_importance(model, X_full, y_full, n_repeats=10, random_state=42, n_jobs=-1)
+        shap_data = {
+            'importances_mean': r.importances_mean,
+            'features': FEATURES,
+            'method': 'permutation'
+        }
     
     with open(IMPORTANCE_FILE, 'wb') as f:
-        pickle.dump(imp_data, f)
+        pickle.dump(shap_data, f)
         
     print("GBM Training complete.")
 

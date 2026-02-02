@@ -344,20 +344,39 @@ def main():
                 method = interp_data.get('method', 'unknown')
                 if method == 'shap':
                     shap_vals = interp_data['shap_values']
-                    # Ensure we have a 1D vector for the last observation
+                    X_data = interp_data['X']
+                    
+                    # Find index of selected_date
+                    # X_data index is DatetimeIndex. 
+                    try:
+                        # Get integer location of selected_date
+                        # We use searchsorted or direct lookup if exact match exists
+                        if selected_date in X_data.index:
+                            idx = X_data.index.get_loc(selected_date)
+                        else:
+                            # Fallback to last if not found (should not happen if dates aligned)
+                            st.warning(f"SHAP data not found for {selected_date.date()}. Showing latest.")
+                            idx = -1
+                    except Exception as e:
+                         idx = -1
+                         
+                    # Slice SHAP values
                     if len(shap_vals.shape) == 2:
-                        last_shap = shap_vals[-1, :]
+                        last_shap = shap_vals[idx, :]
                     elif len(shap_vals.shape) == 3:
-                        last_shap = shap_vals[-1, :, 1]
+                        last_shap = shap_vals[idx, :, 1]
                     else:
                         last_shap = shap_vals
                         
-                    feature_names = interp_data['X'].columns
+                    feature_names = X_data.columns
                     shap_df = pd.DataFrame({'Feature': feature_names, 'SHAP': last_shap})
                     shap_df['AbsSHAP'] = shap_df['SHAP'].abs()
                     shap_df = shap_df.sort_values('AbsSHAP', ascending=True).tail(10)
+                    
+                    # Updates title to reflect date
+                    title_date = selected_date.date() if idx != -1 else "Latest"
                     fig_shap = px.bar(shap_df, x='SHAP', y='Feature', orientation='h', 
-                                      title="Feature Contribution (SHAP)",
+                                      title=f"Feature Contribution (SHAP) - {title_date}",
                                       color='SHAP', color_continuous_scale=['blue', 'red'])
                     st.plotly_chart(fig_shap, width='stretch')
                 elif method == 'importance' or method == 'permutation':
