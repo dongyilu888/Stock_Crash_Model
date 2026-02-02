@@ -136,24 +136,6 @@ def main():
         - **Output**: Hazard Score (Relative Risk Multiplier).
         """
 
-    with st.expander("Explore Architecture & Methodology"):
-        col_m1, col_m2 = st.columns(2)
-        with col_m1:
-            st.markdown(f"### 🛠 Model Structure ({model_type})")
-            st.markdown(arch_text)
-        with col_m2:
-            st.markdown("### 📊 Feature Engineering")
-            st.markdown("""
-            - **Valuation**: CAPE and TTM Earnings Yield.
-            - **Macro & Labor**: YoY Unemployment, CPI Inflation, and Manufacturing Hours.
-            - **Leading Indicators**: Housing Starts, Building Permits, and Consumer Sentiment (YoY/Change).
-            - **Rates & Credit**: Term Spread and Credit Spreads.
-            - **Market Internals**: 12m Momentum and Price Volatility.
-            - **Leakage Prevention**: 
-                - **Point-in-Time Lag**: All features (Macro, Financial, Leading) are lagged by **1 month** to ensure we only use data available at the start of the prediction month.
-                - **Forward Horizon Gap**: Training windows include a 12-month "dead zone" before the test date to prevent target labels from leaking into the training features.
-            """)
-    
     with st.expander("📖 Model Narrative & Strategy", expanded=True):
         if model_type == 'Random Forest':
             st.markdown("""
@@ -174,10 +156,13 @@ def main():
             st.markdown("""
             ### 🚀 Gradient Boosting (GBM) Narrative
             
-            **1. Advanced Classification**
-            Gradient Boosting builds an ensemble of weak prediction trees sequentially, where each new tree corrects the errors of the previous ones. This often yields higher predictive accuracy (0.444 Somers' D) and better calibration than other methods.
+            **1. Crash Definition**
+            We define a "crash" as a **>20% drawdown from a local peak** (the traditional definition of a Bear Market). The model's target is binary: *Will a crash begin at any point within the next 12 months?* This allows us to capture the "building risk" before the actual price drop is fully realized.
             
-            **2. Key Features**
+            **2. Dataset Choices**
+            Similar to other models, we use the full history from 1929. GBM is particularly effective at handling standard tabular financial data without extensive preprocessing, though we maintain the strict lag structure to prevent leakage.
+            
+            **3. Modeling Decisions**
             - **Histogram-Based**: We use a modern Histogram-based implementation (similar to LightGBM) for efficiency.
             - **Monotonic Constraints**: We enforce logical rules (e.g., Higher Unemployment *must* increase risk, not decrease it) to ensure the model behaves economically rationally even in unseen data regimes.
             - **Calibration**: The raw scores are calibrated using a Sigmoid function to produce true probabilities (0-100%).
@@ -194,6 +179,24 @@ def main():
             
             **3. Modeling Decisions**
             We implemented a **Cox Proportional Hazards** model because market cycles exhibit "fat tails" and varying durations. This model is superior for answering the question: *"Regardless of the 12-month window, how much 'time' is realistically left in this bull market regime?"* It provides a full **Survival Curve**, showing the probability of the market surviving (not crashing) over the next 1, 3, 6, and 12+ months.
+            """)
+
+    with st.expander("Explore Architecture & Methodology"):
+        col_m1, col_m2 = st.columns(2)
+        with col_m1:
+            st.markdown(f"### 🛠 Model Structure ({model_type})")
+            st.markdown(arch_text)
+        with col_m2:
+            st.markdown("### 📊 Feature Engineering")
+            st.markdown("""
+            - **Valuation**: CAPE and TTM Earnings Yield.
+            - **Macro & Labor**: YoY Unemployment, CPI Inflation, and Manufacturing Hours.
+            - **Leading Indicators**: Housing Starts, Building Permits, and Consumer Sentiment (YoY/Change).
+            - **Rates & Credit**: Term Spread and Credit Spreads.
+            - **Market Internals**: 12m Momentum and Price Volatility.
+            - **Leakage Prevention**: 
+                - **Feature-Specific Lags**: Implemented precise **0-month** (Price/Rates), **1-month** (Macro), and **2-month** (Housing) lags to eliminate lookahead bias.
+                - **Forward Horizon Gap**: Training windows include a 12-month "dead zone" before the test date to prevent target labels from leaking into the training features.
             """)
     
     with st.expander("🔬 Validation Strategy & Data Periods"):
@@ -251,21 +254,57 @@ def main():
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        st.subheader(f"Current Risk ({model_type})")
+        # Select Date for "Current" View (Time Travel)
+        st.subheader("Risk Analysis")
+        
+        # Default to latest, but allow user to slide back
+        valid_dates = predictions.index.sort_values()
+        selected_date = st.select_slider(
+            "Select Date to Analyze",
+            options=valid_dates,
+            value=valid_dates[-1],
+            format_func=lambda x: x.date()
+        )
+        
+        # Get Data for Selected Date
+        selected_row = predictions.loc[selected_date]
         
         if model_type == 'Survival (CoxPH)':
-             latest_hazard = latest_row['Hazard_Score']
-             st.metric("Hazard Score", f"{latest_hazard:.2f}")
-             st.info("The Hazard Score multiplier indicates the current risk level relative to the historical baseline. >1.0 implies higher than average risk.")
+             latest_hazard = selected_row['Hazard_Score']
+             st.metric(f"Hazard Score ({selected_date.date()})", f"{latest_hazard:.2f}")
              
-             # Show Survival Curve
-             curve = load_survival_curve()
-             if curve is not None:
-                 st.write("Survival Function (Prob. of NO crash over time)")
-                 fig_curve = px.line(curve, title="Survival Probability Distribution", labels={'index': 'Months', 'value': 'Prob(Survival)'})
+             # Dynamic Survival Curve Calculation
+             # 1. Load the "Base" curve (which is the curve for the LATEST available date in the CSV)
+             latest_curve_df = load_survival_curve()
+             
+             if latest_curve_df is not None:
+                 # The CSV has the curve for the LAST DATE in the training set.
+                 # We need to reverse-engineer the Baseline Hazard S0(t)
+                 # Formula: S_t(t) = S_0(t) ^ exp(beta*x_t) = S_0(t) ^ Hazard_Score_t
+                 # Thus: S_0(t) = S_t(t) ^ (1 / Hazard_Score_t)
+                 
+                 # Get the hazard score corresponding to the curve's date (latest prediction date)
+                 # We assume current_survival_curve.csv corresponds to valid_dates[-1]
+                 ref_hazard = predictions.iloc[-1]['Hazard_Score']
+                 
+                 # Take the first column (should be the probability values)
+                 curve_vals = latest_curve_df.iloc[:, 0]
+                 
+                 # Calculate Baseline
+                 baseline_curve = curve_vals ** (1.0 / ref_hazard)
+                 
+                 # Calculate Selected Date Curve: S_new(t) = S_0(t) ^ new_hazard
+                 selected_curve = baseline_curve ** latest_hazard
+                 
+                 fig_curve = px.line(x=latest_curve_df.index, y=selected_curve, 
+                                     title=f"Survival Probability (from {selected_date.date()})", 
+                                     labels={'x': 'Months Forward', 'y': 'Prob(No Crash)'})
+                 
+                 # Fix y-axis to 0-1
+                 fig_curve.update_yaxes(range=[0, 1.05])
                  st.plotly_chart(fig_curve, width='stretch')
         else:
-            latest_prob = latest_row['Crash_Prob']
+            latest_prob = selected_row['Crash_Prob']
             fig_gauge = go.Figure(go.Indicator(
                 mode = "gauge+number",
                 value = latest_prob * 100,
