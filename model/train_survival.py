@@ -65,9 +65,9 @@ def train_survival():
     
     for dt in years:
         # Prepare Training Data
-        # At time T, we predict T -> T+3 years. We can train on data up to T-1 month.
-        # The 1-month gap accounts for feature publication lags (already applied in features).
-        train_df = fit_df[fit_df.index < (dt - pd.DateOffset(months=1))].copy()
+        # At time T, we predict T -> T+3 years. We can train on data up to T-12 months.
+        # This aligns with the strict embargo used in other models to verify robustness.
+        train_df = fit_df[fit_df.index < (dt - pd.DateOffset(months=12))].copy()
         
         # Test 3 years forward (e.g., 1960, 1961, 1962 inclusive)
         test_df = fit_df[(fit_df.index >= dt) & (fit_df.index < dt + pd.DateOffset(years=3))].copy()

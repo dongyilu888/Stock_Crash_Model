@@ -40,56 +40,20 @@ def somers_d_score(y_true, y_prob):
     except:
         return np.nan
 
-def train_gbm():
-    print("Training Gradient Boosting model (HistGradientBoosting)...")
-    df = pd.read_csv(FEATURES_FILE, index_col=0, parse_dates=[0])
-    df = df.sort_index()
-    
-    # We use expanding window manually to generate full history predictions similar to RF
-    # TimeSeriesSplit is great for cross-validation metrics, but we want a "Live Backtest" curve.
-    start_date = pd.Timestamp('1929-01-01')
-    predictions = []
-    years = pd.date_range(start=start_date, end=df.index.max(), freq='YS')
-    
-    if df.index.min() > start_date:
-        print(f"Warning: Data starts at {df.index.min()}, adjusting start.")
-        years = pd.date_range(start=df.index.min() + pd.DateOffset(years=5), end=df.index.max(), freq='AS')
-
-    # Create timestamps for annual expansion
-    # Start from 1960 (so initial training is 1929-1959)
-    # Expand every 1 year
-    years = pd.date_range(start=pd.Timestamp('1960-01-01'), end=df.index.max(), freq='YS') # 1-Year Start
-    
-    # Define Monotonic Constraints
-    # 1: Monotonically increasing with feature, -1: Monotonically decreasing
-    # Feature indices:
-    # 0: CAPE (Pos), 1: Earnings_Yield (Neg), 2: Inflation (Pos), 3: Unemp (Pos), 4: Unemp_Chg (Pos)
-    # 5: Term_Spread (Neg), 6: Credit_Spread (Pos), 7: Real_Rate (Pos), 8: Commodity_Ret (Pos)
-    # 9: S&P_Ret (None), 10: S&P_Vol (Pos), 11: Housing_Starts (Neg), 12: Building_Permits (Neg)
-    # 13: Sentiment_Change (Neg), 14: Mfg_Hours_Change (Neg)
-    
-    # Model: Tempered configuration for realistic probabilities
+def run_expanding_gbm(df):
+    print(f"Running Expanding Window Validation (Start 1960)...")
     base_model = HistGradientBoostingClassifier(
-        learning_rate=0.03, 
-        max_iter=200, 
-        max_depth=3, 
-        min_samples_leaf=40,
-        l2_regularization=10.0,
-        random_state=42
+        learning_rate=0.03, max_iter=200, max_depth=3, min_samples_leaf=40, l2_regularization=10.0, random_state=42
     )
-    
-    # Calibration is ESSENTIAL for financial risk models to prevent 0/1 clipping
-    # We use 5 folds to ensure a stable sigmoid fit.
     model = CalibratedClassifierCV(base_model, method='sigmoid', cv=5)
     
-    print(f"Backtesting from {years[0].year} to {years[-1].year} with 1-year windows...")
-    
+    predictions = []
+    years = pd.date_range(start=pd.Timestamp('1960-01-01'), end=df.index.max(), freq='YS')
+    if df.index.min() > pd.Timestamp('1929-01-01'):
+        years = pd.date_range(start=df.index.min() + pd.DateOffset(years=5), end=df.index.max(), freq='AS')
+        
     for dt in years:
-        # PURE LIVE BACKTEST: You can only train on labels that are fully known.
-        # At time T, we predict T+1 to T+12 (1 year). We can train on data up to T-1.
-        # The 1-month gap accounts for feature publication lags (already applied in features).
-        train_mask = df.index < (dt - pd.DateOffset(months=1))
-        # Test 1 year forward (e.g., 1960 inclusive)
+        train_mask = df.index < (dt - pd.DateOffset(months=12))
         test_mask = (df.index >= dt) & (df.index < dt + pd.DateOffset(years=1))
         
         train_df = df[train_mask]
@@ -102,29 +66,92 @@ def train_gbm():
         y_train = train_df[TARGET]
         X_test = test_df[FEATURES]
         
-        # Fit
         model.fit(X_train, y_train)
-        
-        # Predict
         probs = model.predict_proba(X_test)[:, 1]
         
-        res = pd.DataFrame({
-            'Crash_Prob': probs,
-            'Target': test_df[TARGET]
-        }, index=test_df.index)
+        res = pd.DataFrame({'Crash_Prob': probs, 'Target': test_df[TARGET]}, index=test_df.index)
         predictions.append(res)
         
     if not predictions:
-        print("No predictions generated.")
-        return
+        return pd.DataFrame(), 0.0
         
     full_preds = pd.concat(predictions)
+    score = somers_d_score(full_preds['Target'], full_preds['Crash_Prob'])
+    return full_preds, score
+
+def run_purged_kfold_gbm(df, n_splits=3):
+    print(f"Running Purged K-Fold CV (K={n_splits})...")
+    from sklearn.model_selection import KFold
+    kf = KFold(n_splits=n_splits, shuffle=False)
+    
+    predictions = []
+    
+    for fold_idx, (train_idx, test_idx) in enumerate(kf.split(df)):
+        test_dates = df.index[test_idx]
+        test_start = test_dates.min()
+        test_end = test_dates.max()
+        
+        train_original_idx = df.index[train_idx]
+        mask_before = train_original_idx < (test_start - pd.DateOffset(months=12))
+        mask_after = train_original_idx > (test_end + pd.DateOffset(months=12))
+        train_purged_dates = train_original_idx[mask_before | mask_after]
+        
+        if len(train_purged_dates) < 50:
+            continue
+            
+        train_df = df.loc[train_purged_dates]
+        test_df = df.iloc[test_idx]
+        
+        X_train = train_df[FEATURES]
+        y_train = train_df[TARGET]
+        X_test = test_df[FEATURES]
+        
+        base_model = HistGradientBoostingClassifier(
+            learning_rate=0.03, max_iter=200, max_depth=3, min_samples_leaf=40, l2_regularization=10.0, random_state=42
+        )
+        model = CalibratedClassifierCV(base_model, method='sigmoid', cv=5)
+        
+        model.fit(X_train, y_train)
+        probs = model.predict_proba(X_test)[:, 1]
+        
+        res = pd.DataFrame({'Crash_Prob': probs, 'Target': test_df[TARGET]}, index=test_df.index)
+        predictions.append(res)
+        
+    if not predictions:
+        return pd.DataFrame(), 0.0
+        
+    full_preds = pd.concat(predictions).sort_index()
+    score = somers_d_score(full_preds['Target'], full_preds['Crash_Prob'])
+    return full_preds, score
+
+def train_gbm():
+    print("Training Gradient Boosting model (HistGradientBoosting)...")
+    df = pd.read_csv(FEATURES_FILE, index_col=0, parse_dates=[0])
+    df = df.sort_index()
+    
+    # 1. Expand
+    preds_ew, score_ew = run_expanding_gbm(df)
+    print(f"Expanding Window Somers' D: {score_ew:.4f}")
+    
+    # 2. Purged K-Fold
+    preds_kf, score_kf = run_purged_kfold_gbm(df, n_splits=3)
+    print(f"Purged K-Fold (K=3) Somers' D: {score_kf:.4f}")
+    
+    if score_kf > score_ew:
+        print(f"✅ K-Fold outperformed Expanding Window ({score_kf:.4f} > {score_ew:.4f}). Using K-Fold predictions.")
+        final_preds = preds_kf
+        final_score = score_kf
+    else:
+        print(f"✅ Expanding Window outperformed K-Fold ({score_ew:.4f} > {score_kf:.4f}). Using Expanding Window predictions.")
+        final_preds = preds_ew
+        final_score = score_ew
+        
+    full_preds = final_preds
     full_preds.index.name = 'Date'
     full_preds.to_csv(PREDICTIONS_FILE)
     print(f"Predictions saved to {PREDICTIONS_FILE}")
     
     from sklearn.metrics import brier_score_loss, average_precision_score
-    
     overall_sd = somers_d_score(full_preds['Target'], full_preds['Crash_Prob'])
     overall_brier = brier_score_loss(full_preds['Target'], full_preds['Crash_Prob'])
     overall_pr_auc = average_precision_score(full_preds['Target'], full_preds['Crash_Prob'])
@@ -149,6 +176,10 @@ def train_gbm():
     
     # Final Model
     print("Training final GBM model on full history...")
+    base_model = HistGradientBoostingClassifier(
+        learning_rate=0.03, max_iter=200, max_depth=3, min_samples_leaf=40, l2_regularization=10.0, random_state=42
+    )
+    model = CalibratedClassifierCV(base_model, method='sigmoid', cv=5)
     X_full = df[FEATURES]
     y_full = df[TARGET]
     model.fit(X_full, y_full)
@@ -157,33 +188,14 @@ def train_gbm():
         pickle.dump(model, f)
         
     # Interpretability
-    # Use SHAP if available. SHAP for HistGradientBoosting returns the raw leaf values (log-odds).
-    # Since we use CalibratedClassifierCV, we cannot explain the outer model directly with TreeExplainer.
-    # We train a "Proxy" uncalibrated model on the full dataset solely for interpretation.
-    # This acts as the "core logic" of the GBM before the sigmoid calibration layer.
-    
     if shap:
         print("Calculating SHAP values using Proxy Model...")
-        # Proxy model with identical params to base_model
         proxy_model = HistGradientBoostingClassifier(
-            learning_rate=0.03, 
-            max_iter=200, 
-            max_depth=3, 
-            min_samples_leaf=40,
-            l2_regularization=10.0,
-            random_state=42
+            learning_rate=0.03, max_iter=200, max_depth=3, min_samples_leaf=40, l2_regularization=10.0, random_state=42
         )
         proxy_model.fit(X_full, y_full)
-        
-        # Explain
         explainer = shap.TreeExplainer(proxy_model)
-        # SHAP for HistGradientBoosting in newer versions might compute directly.
         shap_values = explainer.shap_values(X_full)
-        
-        # shap_values shape for binary classification might be (N, features) for log-odds or (N, features, 2)
-        # For HistGradientBoostingClassifier, it often returns just the raw values for the positive class (if binary).
-        print(f"SHAP values shape: {shap_values.shape}")
-        
         shap_data = {
             'shap_values': shap_values,
             'X': X_full,

@@ -103,7 +103,7 @@ def main():
         st.sidebar.markdown("""
         **Objective**: Binary Classification (Crash in next 12m).
         **Model**: Random Forest
-        - *Perf*: Somers' D: 0.546
+        - *Perf*: Somers' D: 0.422
         - *Strength*: Interaction detection.
         """)
         arch_text = """
@@ -115,7 +115,7 @@ def main():
         st.sidebar.markdown("""
         **Objective**: Binary Classification (Crash in next 12m).
         **Model**: Gradient Boosting
-        - *Perf*: Somers' D: 0.444
+        - *Perf*: Somers' D: 0.322
         - *Strength*: Precision & Calibration.
         """)
         arch_text = """
@@ -127,7 +127,7 @@ def main():
         st.sidebar.markdown("""
         **Objective**: Time-to-Event Analysis.
         **Model**: Cox Proportional Hazards
-        - *Perf*: C-Index: 0.593
+        - *Perf*: C-Index: 0.585
         - *Strength*: Timing & Hazard Rate.
         """)
         arch_text = """

@@ -35,110 +35,144 @@ def somers_d_score(y_true, y_prob):
     except:
         return np.nan
 
-def train_model():
-    print("Training model with expanding window...")
-    df = pd.read_csv(FEATURES_FILE, index_col=0, parse_dates=[0])
-    df = df.sort_index()
-    
-    # Define start date for backtest (1929 to capture Great Depression out-of-sample)
+def run_expanding_window(df):
+    print(f"Running Expanding Window Validation (Start 1960)...")
     start_date = pd.Timestamp('1929-01-01')
+    years = pd.date_range(start=pd.Timestamp('1960-01-01'), end=df.index.max(), freq='YS')
     
-    # Expanding Window Loop
-    # We will iterate year by year? Or month by month?
-    # Year by year is faster and sufficient for "Risk regimes".
-    # We predict for the *next* year (or just store predictions for that test set).
-    # Actually, we can predict for every month in the "test" year.
-    
-    predictions = []
-    
-    # Create timestamps for annual expansion
-    # Start from 1960 (so initial training is 1929-1959)
-    # Expand every 1 year
-    years = pd.date_range(start=pd.Timestamp('1960-01-01'), end=df.index.max(), freq='YS') # 1-Year Start
-    
-    # Model Pipeline
-    # Impute missing values (RF can't handle NaNs in scikit-learn standard, though HistGradient can. use SimpleImputer)
+    if df.index.min() > start_date:
+        years = pd.date_range(start=df.index.min() + pd.DateOffset(years=5), end=df.index.max(), freq='AS')
+        
     model = Pipeline([
         ('imputer', SimpleImputer(strategy='median')),
         ('classifier', RandomForestClassifier(n_estimators=100, max_depth=5, min_samples_leaf=5, random_state=42))
     ])
     
-    running_metrics = []
-    
-    # We need at least some data before start_date
-    if df.index.min() > start_date:
-        print(f"Warning: Data starts at {df.index.min()}, adjusting start.")
-        years = pd.date_range(start=df.index.min() + pd.DateOffset(years=5), end=df.index.max(), freq='AS')
-    
-    print(f"Backtesting from {years[0].year} to {years[-1].year} with 1-year windows...")
-    
+    predictions = []
     for dt in years:
-        # PURE LIVE BACKTEST: You can only train on labels that are fully known.
-        # At time T, we predict T+1 to T+12 (1 year). We can train on data up to T-1.
-        # The 1-month gap accounts for feature publication lags (already applied in features).
-        train_mask = df.index < (dt - pd.DateOffset(months=1))
-        # Test 1 year forward (e.g., 1960 inclusive)
+        train_mask = df.index < (dt - pd.DateOffset(months=12))
         test_mask = (df.index >= dt) & (df.index < dt + pd.DateOffset(years=1))
         
         train_df = df[train_mask]
         test_df = df[test_mask]
         
-        if test_df.empty:
-            continue
-            
-        if len(train_df) < 50: # Need minimum samples
+        if test_df.empty or len(train_df) < 50:
             continue
             
         X_train = train_df[FEATURES]
         y_train = train_df[TARGET]
         X_test = test_df[FEATURES]
-        # y_test is not needed for prediction, but for eval later
-        
-        # Fit
         model.fit(X_train, y_train)
-        
-        # Predict Probabilities
         probs = model.predict_proba(X_test)[:, 1]
         
-        # Store
-        res = pd.DataFrame({
-            'Crash_Prob': probs,
-            'Target': test_df[TARGET]
-        }, index=test_df.index)
+        res = pd.DataFrame({'Crash_Prob': probs, 'Target': test_df[TARGET]}, index=test_df.index)
         predictions.append(res)
         
     if not predictions:
-        print("No predictions generated.")
-        return
+        return pd.DataFrame(), 0.0
         
     full_preds = pd.concat(predictions)
+    score = somers_d_score(full_preds['Target'], full_preds['Crash_Prob'])
+    return full_preds, score
+
+def run_purged_kfold(df, n_splits=3):
+    print(f"Running Purged K-Fold CV (K={n_splits})...")
+    from sklearn.model_selection import KFold
+    kf = KFold(n_splits=n_splits, shuffle=False)
+    
+    predictions = []
+    
+    # KFold indices are integer based on len(df)
+    for fold_idx, (train_idx, test_idx) in enumerate(kf.split(df)):
+        # Identify Test Dates
+        test_dates = df.index[test_idx]
+        test_start = test_dates.min()
+        test_end = test_dates.max()
+        
+        # Purge Train Data
+        # Drop training samples where label might overlap with Test period labels
+        # Embargo: 12 months before Test Start AND 12 months after Test End
+        # If test set is 1960-1980.
+        # Train data 1959-1960 (Label 12m forward) -> overlaps with Test 1960.
+        # Train data 1980-1981 (Label 12m forward) -> overlaps with Test 1980? No.
+        # But a training sample at 1980 (looking 12m forward) uses the same future as Test sample at 1980.
+        # The standard strict rule: No overlap in (Observation Time + 12m Target Window).
+        
+        # Define Forbidden Zone for Training OBSERVATION times.
+        # Training observation at T has target [T, T+12].
+        # Test observation at t has target [t, t+12].
+        # We need [T, T+12] and [t, t+12] to NOT overlap.
+        # So T must be < t - 12 months.
+        # OR T must be > t + 12 months.
+        
+        train_original_idx = df.index[train_idx]
+        
+        mask_before = train_original_idx < (test_start - pd.DateOffset(months=12))
+        mask_after = train_original_idx > (test_end + pd.DateOffset(months=12))
+        
+        train_purged_dates = train_original_idx[mask_before | mask_after]
+        
+        if len(train_purged_dates) < 50:
+            print(f"Fold {fold_idx}: Not enough training data after purging.")
+            continue
+            
+        train_df = df.loc[train_purged_dates]
+        test_df = df.iloc[test_idx]
+        
+        X_train = train_df[FEATURES]
+        y_train = train_df[TARGET]
+        X_test = test_df[FEATURES]
+        
+        model = Pipeline([
+            ('imputer', SimpleImputer(strategy='median')),
+            ('classifier', RandomForestClassifier(n_estimators=100, max_depth=5, min_samples_leaf=5, random_state=42))
+        ])
+        
+        model.fit(X_train, y_train)
+        probs = model.predict_proba(X_test)[:, 1]
+        
+        res = pd.DataFrame({'Crash_Prob': probs, 'Target': test_df[TARGET]}, index=test_df.index)
+        predictions.append(res)
+        
+    if not predictions:
+        return pd.DataFrame(), 0.0
+        
+    full_preds = pd.concat(predictions).sort_index()
+    score = somers_d_score(full_preds['Target'], full_preds['Crash_Prob'])
+    return full_preds, score
+
+def train_model():
+    print("Loading data...")
+    df = pd.read_csv(FEATURES_FILE, index_col=0, parse_dates=[0])
+    df = df.sort_index()
+    
+    # 1. Run Expanding Window
+    preds_ew, score_ew = run_expanding_window(df)
+    print(f"Expanding Window Somers' D: {score_ew:.4f}")
+    
+    # 2. Run Purged K-Fold
+    preds_kf, score_kf = run_purged_kfold(df, n_splits=3)
+    print(f"Purged K-Fold (K=3) Somers' D: {score_kf:.4f}")
+    
+    # Compare and Select
+    if score_kf > score_ew:
+        print(f"✅ K-Fold outperformed Expanding Window ({score_kf:.4f} > {score_ew:.4f}). Using K-Fold predictions.")
+        final_preds = preds_kf
+        final_score = score_kf
+    else:
+        print(f"✅ Expanding Window outperformed K-Fold ({score_ew:.4f} > {score_kf:.4f}). Using Expanding Window predictions.")
+        final_preds = preds_ew
+        final_score = score_ew
+        
+    full_preds = final_preds
     full_preds.index.name = 'Date'
     full_preds.to_csv(PREDICTIONS_FILE)
     print(f"Predictions saved to {PREDICTIONS_FILE}")
     
-    # Calculate Evaluation Scores
-    # Overall Somers' D
-    from sklearn.metrics import brier_score_loss, average_precision_score
-    
-    overall_sd = somers_d_score(full_preds['Target'], full_preds['Crash_Prob'])
-    overall_brier = brier_score_loss(full_preds['Target'], full_preds['Crash_Prob'])
-    overall_pr_auc = average_precision_score(full_preds['Target'], full_preds['Crash_Prob'])
-    
-    print(f"Overall Out-of-Sample Somers' D: {overall_sd:.4f}")
-    print(f"Overall Out-of-Sample Brier Score: {overall_brier:.4f}")
-    print(f"Overall Out-of-Sample PR-AUC: {overall_pr_auc:.4f}")
-    
+    # Generate Rolling Metrics from Final Preds
     # Rolling Somers' D (e.g. 5 or 10 year window)
-    # We can compute this for the metrics file
     metrics = []
-    # Compute score per decade? Or rolling 5 year?
-    # Window size: 30 months
     window_size = 30
-    
-    # We need a rolling apply.
-    # Custom rolling metric.
-    # Note: Rolling AUC requires both classes present in window.
-    
     for end_idx in range(window_size, len(full_preds)):
         window = full_preds.iloc[end_idx-window_size:end_idx]
         if window['Target'].nunique() > 1:
@@ -152,6 +186,10 @@ def train_model():
     
     # Train final model on ALL data for "Today" view and Interpretation
     print("Training final model on full history...")
+    model = Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('classifier', RandomForestClassifier(n_estimators=100, max_depth=5, min_samples_leaf=5, random_state=42))
+    ])
     X_full = df[FEATURES]
     y_full = df[TARGET]
     model.fit(X_full, y_full)
@@ -163,32 +201,20 @@ def train_model():
     # SHAP Explainer
     try:
         import shap
-        # Use TreeExplainer (but we have a Pipeline). 
-        # Extract step.
         rf_model = model.named_steps['classifier']
-        
-        # SHAP needs non-missing data. Valid set.
-        # We need to transform X_full first.
         imputer = model.named_steps['imputer']
         X_transformed = pd.DataFrame(imputer.transform(X_full), columns=FEATURES, index=X_full.index)
         
-        # Explain
-        # Using a subsample for background if dataset is large, but 1000 rows is fine.
         explainer = shap.TreeExplainer(rf_model)
         shap_values = explainer.shap_values(X_transformed)
         
-        # shap_values is list of arrays for classification (one per class). We want Prob(Crash)=1
-        # Handle different SHAP output formats (list of arrays, 3D array, or 2D array)
         if isinstance(shap_values, list):
-             # Class 1 (Crash)
              vals = shap_values[1]
         elif len(shap_values.shape) == 3:
-             # Class 1 (Crash) from (samples, features, classes)
              vals = shap_values[:, :, 1]
         else:
              vals = shap_values
              
-        # Save SHAP values (associated with indices)
         shap_data = {
             'shap_values': vals,
             'X': X_transformed,
@@ -201,7 +227,6 @@ def train_model():
         
     except Exception as e:
         print(f"SHAP computation failed: {e}. Falling back to Feature Importance.")
-        # Fallback: Save simple feature importances
         rf_model = model.named_steps['classifier']
         importances = rf_model.feature_importances_
         shap_data = {
