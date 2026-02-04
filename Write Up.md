@@ -1,12 +1,12 @@
 
-**S\&P 500 Crash Prediction: Project Retrospective
+# S\&P 500 Crash Prediction: Project Retrospective
 
 ## 1\. What Worked
 
 * **Rigorous Point-in-Time Data Engineering:**  
   * Feature-Specific Lags: We implemented variable lags (0-month for market price/rates, 1-month for standard macro, 2-months for housing) to precisely mirror real-time information availability.  
   * Historical Proxies: To extend our history back to 1929, we systematically used the S\&P 90 index as a proxy for the S\&P 500 prior to its 1957 inception, ensuring consistent volatility and trend capture across the Great Depression.  
-  * Result: This rigorous alignment prevented "lookahead bias," ensuring our backtest results (Somers' D \~0.55) are realistic estimates of live performance.  
+  * Result: This rigorous alignment prevented "lookahead bias," ensuring our backtest results are realistic estimates of live performance.  
 * **The "Two-Pronged" Model Approach:** Combining Random Forest/GBM (Classification) and CoxPH (Survival Analysis) proved highly effective.  
   * Random Forest excelled at capturing non-linear interactions (e.g., High Rates are okay unless Unemployment is rising), acting as our primary "Regime Risk" detector.  
   * Gradient Boosting (GBM): Added as a second classification lens, providing higher precision and better probability calibration via histogram-based binning and monotonic constraints.  
