@@ -259,12 +259,17 @@ def main():
         
         # Default to latest, but allow user to slide back
         valid_dates = predictions.index.sort_values()
-        selected_date = st.select_slider(
+        
+        # Convert to list of python timestamps for compatibility
+        slider_options = valid_dates.to_pydatetime()
+        
+        selected_date_val = st.select_slider(
             "Select Date to Analyze",
-            options=valid_dates,
-            value=valid_dates[-1],
-            format_func=lambda x: x.date()
+            options=slider_options,
+            value=slider_options[-1],
+            format_func=lambda x: x.strftime('%Y-%m-%d')
         )
+        selected_date = pd.Timestamp(selected_date_val)
         
         # Get Data for Selected Date
         selected_row = predictions.loc[selected_date]
