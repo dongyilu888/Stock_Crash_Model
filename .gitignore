@@ -4,8 +4,8 @@ data/*.csv
 data/*.xls
 
 # Models & Results
-results/*.pkl
-results/*.csv
+# results/*.pkl
+# results/*.csv
 
 # Python
 __pycache__/
